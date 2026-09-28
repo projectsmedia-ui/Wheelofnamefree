@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wheel of Names</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+        /* Custom scrollbar for entries box */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="bg-[#0e131f] text-gray-200 min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-[#182032] border-b border-gray-800 px-4 py-2 flex items-center justify-between text-sm shadow-md z-20">
+        <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 cursor-pointer">
+                <!-- Logo Canvas Icon -->
+                <div class="w-8 h-8 rounded-full border-2 border-yellow-400 overflow-hidden flex items-center justify-center bg-gradient-to-r from-red-500 via-green-500 to-blue-500">
+                    <div class="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+                <span class="font-bold text-lg text-white tracking-wide">Wheel of Names</span>
+            </div>
+        </div>
+
+        <!-- Top Navigation Actions -->
+        <div class="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
+            <button onclick="customizeWheel()" class="hover:bg-[#25324a] px-3 py-1.5 rounded flex items-center space-x-1 transition">
+                <i class="fa-solid fa-[#0e131f] fa-palette text-amber-400"></i>
+                <span class="hidden md:inline">Customize</span>
+            </button>
+            <button onclick="resetWheel()" class="hover:bg-[#25324a] px-3 py-1.5 rounded flex items-center space-x-1 transition">
+                <i class="fa-solid fa-file text-blue-400"></i>
+                <span class="hidden md:inline">New</span>
+            </button>
+            <button class="bg-[#25324a] hover:bg-[#314263] px-3 py-1.5 rounded flex items-center space-x-1 font-medium transition">
+                <i class="fa-solid fa-folder-open text-yellow-400"></i>
+                <span class="hidden md:inline">Open</span>
+            </button>
+            <button class="hover:bg-[#25324a] px-3 py-1.5 rounded flex items-center space-x-1 transition">
+                <i class="fa-solid fa-floppy-disk text-gray-300"></i>
+                <span class="hidden md:inline">Save</span>
+            </button>
+            <button class="hover:bg-[#25324a] px-3 py-1.5 rounded flex items-center space-x-1 transition">
+                <i class="fa-solid fa-share-nodes text-emerald-400"></i>
+                <span class="hidden md:inline">Share</span>
+            </button>
+            <button class="hover:bg-[#25324a] px-3 py-1.5 rounded flex items-center space-x-1 transition">
+                <i class="fa-solid fa-magnifying-glass text-gray-300"></i>
+                <span class="hidden md:inline">Gallery</span>
+            </button>
+            <button onclick="toggleFullScreen()" class="hover:bg-[#25324a] p-2 rounded transition" title="Fullscreen">
+                <i class="fa-solid fa-expand"></i>
+            </button>
+            <button class="hover:bg-[#25324a] p-2 rounded transition">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+            <button class="hover:bg-[#25324a] px-2 py-1.5 rounded flex items-center space-x-1 transition">
+                <i class="fa-solid fa-globe"></i>
+                <span class="hidden sm:inline">English</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col lg:flex-row relative overflow-hidden bg-gradient-to-b from-[#121826] to-[#0a0d15]">
+        
+        <!-- Left Side Bar / Ad Mock Placeholder (as seen in screenshot) -->
+        <div class="hidden xl:flex flex-col p-4 w-72 shrink-0 z-10">
+            <div class="bg-[#182032] border border-gray-800 rounded-lg p-3 text-xs text-gray-400 space-y-3 shadow-lg">
+                <div class="flex justify-between items-center">
+                    <span class="cursor-pointer hover:underline">Report bad ad <i class="fa-solid fa-flag text-gray-500"></i></span>
+                    <button class="hover:text-white">Close ads <i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="bg-gray-900 border border-gray-700 rounded overflow-hidden relative group">
+                    <img src="https://placehold.co/300x250/1e293b/ffffff?text=FlickReels+Ad+Space" alt="Ad Banner" class="w-full object-cover">
+                    <div class="p-2 bg-slate-800 text-white font-medium flex items-center justify-between">
+                        <span>Watch free episodes</span>
+                        <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Wheel Container -->
+        <div class="flex-1 flex items-center justify-center p-4 relative min-h-[450px] sm:min-h-[550px]">
+            <!-- Wheel Wrapper -->
+            <div class="relative w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] md:w-[540px] md:h-[540px] flex items-center justify-center">
+                <!-- Wheel Canvas -->
+                <canvas id="wheelCanvas" width="600" height="600" class="w-full h-full cursor-pointer rounded-full shadow-2xl transition-transform"></canvas>
+
+                <!-- Pointer Arrow (Positioned at 3 o'clock pointing Left) -->
+                <div class="absolute right-[-18px] sm:right-[-22px] top-1/2 transform -translate-y-1/2 z-20 pointer-events-none filter drop-shadow-md">
+                    <div class="w-0 h-0 border-y-[14px] sm:border-y-[18px] border-y-transparent border-r-[28px] sm:border-r-[36px] border-r-amber-400"></div>
+                </div>
+
+                <!-- Center Knob -->
+                <div onclick="spinWheel()" class="absolute w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform z-10">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 bg-slate-100 rounded-full border border-gray-300"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar (Entries & Results Panel) -->
+        <div class="w-full lg:w-80 xl:w-96 bg-[#151c2c] border-t lg:border-t-0 lg:border-l border-gray-800 flex flex-col z-10 shrink-0">
+            <!-- Sidebar Header Tabs -->
+            <div class="flex border-b border-gray-800 bg-[#111724]">
+                <button id="tabEntriesBtn" onclick="switchTab('entries')" class="flex-1 py-3 font-semibold text-sm border-b-2 border-blue-500 text-blue-400 flex items-center justify-center space-x-2">
+                    <span>Entries</span>
+                    <span id="entriesCountBadge" class="bg-blue-900/60 text-blue-300 text-xs px-2 py-0.5 rounded-full">19</span>
+                </button>
+                <button id="tabResultsBtn" onclick="switchTab('results')" class="flex-1 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 flex items-center justify-center space-x-2">
+                    <span>Results</span>
+                    <span id="resultsCountBadge" class="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+
+            <!-- Tab Content: Entries -->
+            <div id="tabEntries" class="flex-1 flex flex-col p-4 space-y-3 overflow-hidden">
+                <!-- Action Buttons Toolbar -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="shuffleEntries()" class="flex-1 bg-[#222c40] hover:bg-[#2c3952] text-xs font-semibold py-2 px-3 rounded flex items-center justify-center space-x-1.5 transition border border-gray-700/50">
+                        <i class="fa-solid fa-shuffle text-blue-400"></i>
+                        <span>Shuffle</span>
+                    </button>
+                    <button onclick="sortEntries()" class="flex-1 bg-[#222c40] hover:bg-[#2c3952] text-xs font-semibold py-2 px-3 rounded flex items-center justify-center space-x-1.5 transition border border-gray-700/50">
+                        <i class="fa-solid fa-arrow-down-a-z text-blue-400"></i>
+                        <span>Sort</span>
+                    </button>
+                    <button class="flex-1 bg-[#222c40] hover:bg-[#2c3952] text-xs font-semibold py-2 px-3 rounded flex items-center justify-center space-x-1.5 transition border border-gray-700/50">
+                        <i class="fa-regular fa-image text-blue-400"></i>
+                        <span>Add image</span>
+                        <i class="fa-solid fa-caret-down text-[10px]"></i>
+                    </button>
+                </div>
+
+                <!-- Advanced Checkbox -->
+                <div class="flex items-center space-x-2 text-xs text-gray-400">
+                    <input type="checkbox" id="chkAdvanced" class="rounded bg-gray-800 border-gray-700 text-blue-600 focus:ring-0">
+                    <label for="chkAdvanced" class="cursor-pointer">Advanced</label>
+                </div>
+
+                <!-- Entries Textarea -->
+                <div class="flex-1 flex flex-col min-h-[220px]">
+                    <textarea id="entriesTextarea" oninput="updateWheelFromTextarea()" class="w-full flex-1 bg-[#0b0e17] border border-gray-700/80 rounded p-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500 font-mono tracking-wide leading-relaxed resize-none" placeholder="Masukkan nama (satu nama per baris)">MIRMA
+SISKA
+CHRISTINA
+MIRMA
+NUNUK
+LINA
+HESTIN
+GURUH
+FAKUR
+SISKA
+ANA
+GURUH
+SILVI
+HESTIN
+ADI
+NURIFA
+SILVI
+NUNUK
+NURIFA</textarea>
+                </div>
+
+                <!-- Add Wheel Button -->
+                <div class="pt-2">
+                    <button class="w-full bg-[#202a3d] hover:bg-[#2a3750] text-xs font-semibold py-2 px-3 rounded flex items-center justify-between text-gray-300 transition border border-gray-700/60">
+                        <span class="flex items-center space-x-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Add wheel</span>
+                        </span>
+                        <i class="fa-solid fa-caret-down"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Content: Results -->
+            <div id="tabResults" class="hidden flex-1 flex-col p-4 space-y-3 overflow-y-auto">
+                <div class="flex justify-between items-center text-xs text-gray-400 pb-2 border-b border-gray-800">
+                    <span>Winners List</span>
+                    <button onclick="clearResults()" class="text-red-400 hover:underline">Clear all</button>
+                </div>
+                <ul id="resultsList" class="space-y-2 text-sm">
+                    <li class="text-gray-500 italic text-center py-6">Belum ada pemenang</li>
+                </ul>
+            </div>
+
+            <!-- Footer Version Info -->
+            <div class="p-3 border-t border-gray-800/80 flex items-center justify-between text-xs text-gray-500 bg-[#0f1420]">
+                <span>Version 431</span>
+                <a href="#" class="hover:underline text-gray-400">Changelog</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Winner Modal Overlay -->
+    <div id="winnerModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#1c2436] rounded-xl overflow-hidden shadow-2xl max-w-md w-full border border-gray-700/60 transform scale-95 transition-transform duration-200" id="winnerModalContent">
+            <!-- Modal Banner Header -->
+            <div class="bg-blue-600 px-6 py-4 text-white text-lg font-bold flex items-center justify-between shadow-md">
+                <span>We have a winner!</span>
+                <button onclick="closeModal()" class="text-white/80 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <!-- Winner Name Display -->
+            <div class="p-8 text-center bg-[#151c2c]">
+                <h2 id="winnerNameText" class="text-4xl sm:text-5xl font-extrabold text-white tracking-wider uppercase drop-shadow-md break-words">
+                    NUNUK
+                </h2>
+            </div>
+            <!-- Action Buttons -->
+            <div class="bg-[#1a2233] px-6 py-4 flex flex-wrap items-center justify-end gap-2 border-t border-gray-800">
+                <button onclick="closeModal()" class="px-4 py-2 text-sm text-gray-300 hover:text-white font-medium transition">
+                    Close
+                </button>
+                <button onclick="removeCurrentWinner()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded text-sm font-semibold transition shadow">
+                    Remove
+                </button>
+                <button onclick="removeAllInstancesWinner()" class="bg-indigo-700 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm font-semibold transition shadow">
+                    Remove all instances
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECRET CONTROL PANEL MODAL (Triggered by Ctrl + H) -->
+    <div id="secretModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#121826] border-2 border-amber-500/80 rounded-xl shadow-2xl max-w-lg w-full overflow-hidden text-gray-200">
+            <!-- Secret Header -->
+            <div class="bg-gradient-to-r from-amber-600 to-yellow-600 px-6 py-3 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-user-ninja text-lg"></i>
+                    <span>Secret Rigging & Lock Control (CTRL + H)</span>
+                </div>
+                <button onclick="toggleSecretModal(false)" class="text-slate-900 hover:text-white text-xl font-bold">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+                <!-- Status Banner -->
+                <div class="bg-amber-950/40 border border-amber-500/40 rounded p-3 text-xs text-amber-200 flex items-start space-x-2">
+                    <i class="fa-solid fa-shield-halved text-amber-400 text-base mt-0.5"></i>
+                    <div>
+                        <span class="font-bold block text-amber-300">Fitur Kunci Nama Tersembunyi Aktif!</span>
+                        Centang nama di bawah yang <strong>DILARANG MENANG</strong> (Tidak akan pernah terpilih). Penonton tidak akan mengetahui pengaturan ini.
+                    </div>
+                </div>
+
+                <!-- Master Toggle -->
+                <div class="flex items-center justify-between bg-[#1a2336] p-3 rounded-lg border border-gray-700">
+                    <span class="font-semibold text-sm">Status Mesin Pengunci:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="secretEngineToggle" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
+
+                <!-- Lock Blacklist Checkboxes -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xs font-bold uppercase text-gray-400">Pilih Nama Yang Dikunci (Tidak Akan Terpilih):</h4>
+                        <div class="space-x-2 text-xs">
+                            <button onclick="selectAllSecret(true)" class="text-amber-400 hover:underline">Kunci Semua</button>
+                            <span class="text-gray-600">|</span>
+                            <button onclick="selectAllSecret(false)" class="text-amber-400 hover:underline">Buka Semua</button>
+                        </div>
+                    </div>
+                    <div id="secretBlacklistContainer" class="bg-[#0b0e17] border border-gray-800 rounded p-3 max-h-48 overflow-y-auto space-y-1.5 text-sm">
+                        <!-- Dynamic Checkboxes populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Forced Winner Option (Optional Extra Secret Feature) -->
+                <div class="bg-[#1a2336] p-3 rounded-lg border border-gray-700 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold uppercase text-gray-300 flex items-center space-x-1">
+                            <i class="fa-solid fa-bullseye text-red-400"></i>
+                            <span>Paksa Pemenang Tertentu (Optional):</span>
+                        </label>
+                        <button onclick="document.getElementById('secretForcedWinnerSelect').value = ''" class="text-[11px] text-gray-400 hover:text-white">Reset</button>
+                    </div>
+                    <select id="secretForcedWinnerSelect" class="w-full bg-[#0b0e17] border border-gray-700 rounded px-3 py-1.5 text-sm text-amber-300 focus:outline-none focus:border-amber-500">
+                        <option value="">-- Acak dari nama yang TIDAK dikunci --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Footer Close Button -->
+            <div class="bg-[#182032] px-5 py-3 flex justify-end border-t border-gray-800">
+                <button onclick="toggleSecretModal(false)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-1.5 rounded text-sm transition">
+                    Simpan & Tutup (Ctrl+H)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wheel Color Palette (Standard Wheel of Names Colors)
+        const SEGMENT_COLORS = [
+            '#e11d48', '#2563eb', '#059669', '#d97706', '#7c3aed', 
+            '#0284c7', '#ca8a04', '#0d9488', '#ea580c', '#4f46e5'
+        ];
+
+        // Global State Variables
+        let entries = [];
+        let results = [];
+        let blacklistedNames = new Set(); // Names that MUST NOT win
+        let forcedWinnerName = null;      // Optional specific next winner
+
+        let canvas = document.getElementById('wheelCanvas');
+        let ctx = canvas.getContext('2d');
+        
+        let currentRotation = 0; // Total rotation angle in radians
+        let isSpinning = false;
+        let lastWinner = null;
+
+        // Audio Context for Wheel Tick Sound
+        let audioCtx = null;
+
+        function playTickSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.03);
+                
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.03);
+            } catch (e) {
+                // Audio fallback if restricted
+            }
+        }
+
+        function init() {
+            updateWheelFromTextarea();
+            drawWheel();
+
+            // Keyboard shortcut for Secret Panel (Ctrl + H)
+            window.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && (e.key === 'h' || e.key === 'H')) {
+                    e.preventDefault();
+                    toggleSecretModal();
+                }
+            });
+
+            // Re-draw canvas on window resize to maintain crispness
+            window.addEventListener('resize', drawWheel);
+        }
+
+        // Parse textarea lines into entries array
+        function updateWheelFromTextarea() {
+            const textarea = document.getElementById('entriesTextarea');
+            const lines = textarea.value.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+            
+            entries = lines;
+            document.getElementById('entriesCountBadge').innerText = entries.length;
+
+            // Sync secret list if secret modal is rendered
+            updateSecretUI();
+
+            drawWheel();
+        }
+
+        function drawWheel() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(centerX, centerY) - 10;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (entries.length === 0) {
+                // Outer circle fallback
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#1e293b';
+                ctx.fill();
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 8;
+                ctx.stroke();
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 20px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Masukkan Nama Terlebih Dahulu', centerX, centerY);
+                return;
+            }
+
+            const numSlices = entries.length;
+            const sliceAngle = (Math.PI * 2) / numSlices;
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(currentRotation);
+
+            // Draw Each Slice
+            for (let i = 0; i < numSlices; i++) {
+                const startAngle = i * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
+                const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
+
+                // Slice sector
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = Math.min(4, 30 / numSlices);
+                ctx.stroke();
+
+                // Draw Text
+                ctx.save();
+                ctx.rotate(startAngle + sliceAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+
+                // Calculate optimal font size according to slice count
+                let fontSize = Math.floor(220 / Math.sqrt(numSlices));
+                fontSize = Math.min(Math.max(fontSize, 11), 26);
+                ctx.font = `bold ${fontSize}px Inter`;
+
+                const nameText = entries[i].toUpperCase();
+                // Truncate long strings for rendering aesthetics
+                const maxTextWidth = radius - 70;
+                let truncated = nameText;
+                if (ctx.measureText(truncated).width > maxTextWidth) {
+                    while (truncated.length > 3 && ctx.measureText(truncated + '...').width > maxTextWidth) {
+                        truncated = truncated.slice(0, -1);
+                    }
+                    truncated += '...';
+                }
+
+                ctx.fillText(truncated, radius - 25, 0);
+                ctx.restore();
+            }
+
+            // Outer Wheel Border Frame
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function spinWheel() {
+            if (isSpinning || entries.length === 0) return;
+
+            // 1. DETERMINE WINNER BASED ON SECRET LOCK ENGINE
+            const secretEngineActive = document.getElementById('secretEngineToggle').checked;
+            let availableIndices = [];
+
+            if (secretEngineActive) {
+                // Filter out entries that are blacklisted/locked
+                entries.forEach((name, idx) => {
+                    if (!blacklistedNames.has(name)) {
+                        availableIndices.push(idx);
+                    }
+                });
+
+                // Fallback: If all names are accidentally blacklisted, unlock all to prevent freeze
+                if (availableIndices.length === 0) {
+                    availableIndices = entries.map((_, i) => i);
+                }
+            } else {
+                availableIndices = entries.map((_, i) => i);
+            }
+
+            // Forced Winner check
+            let targetIndex = -1;
+            const forcedSelect = document.getElementById('secretForcedWinnerSelect');
+            if (secretEngineActive && forcedSelect && forcedSelect.value !== '') {
+                const forcedVal = forcedSelect.value;
+                const matches = [];
+                entries.forEach((n, idx) => {
+                    if (n === forcedVal) matches.push(idx);
+                });
+                if (matches.length > 0) {
+                    targetIndex = matches[Math.floor(Math.random() * matches.length)];
+                }
+            }
+
+            // If no forced winner, pick randomly from non-blacklisted entries
+            if (targetIndex === -1) {
+                targetIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            }
+
+            // 2. CALCULATE TARGET ROTATION ANGLE
+            // Pointer is fixed at 0 degrees (East / 3 o'clock position).
+            // Canvas rotation goes clockwise.
+            // Slices start at 0 rad. Target slice index i center angle = (i + 0.5) * sliceAngle.
+            // Required rotation offset so pointer lands on targetIndex:
+            const numSlices = entries.length;
+            const sliceAngle = (Math.PI * 2) / numSlices;
+            
+            // Random offset within the winning slice (margin from boundaries)
+            const randomSliceOffset = (Math.random() * 0.7 + 0.15) * sliceAngle;
+            const targetSliceAngle = (targetIndex * sliceAngle) + randomSliceOffset;
+
+            // Normalizing rotation
+            const fullSpins = (Math.floor(Math.random() * 4) + 6) * Math.PI * 2; // 6 - 9 full rotations
+            
+            // We need: (currentRotation + deltaRotation) % 2PI = 2PI - targetSliceAngle
+            const currentMod = currentRotation % (Math.PI * 2);
+            const targetMod = (Math.PI * 2) - targetSliceAngle;
+            
+            let rotationNeeded = targetMod - currentMod;
+            if (rotationNeeded <= 0) {
+                rotationNeeded += Math.PI * 2;
+            }
+
+            const totalRotationDelta = fullSpins + rotationNeeded;
+            const finalRotation = currentRotation + totalRotationDelta;
+
+            // 3. ANIMATION PHYSICS LOOP (Ease-Out Cubic)
+            isSpinning = true;
+            const startTime = performance.now();
+            const spinDuration = 6500; // 6.5 seconds smooth deceleration
+            const startRotation = currentRotation;
+
+            let lastTickSlice = Math.floor(((Math.PI * 2) - (currentRotation % (Math.PI * 2))) / sliceAngle) % numSlices;
+
+            function animateSpin(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+                
+                // Ease out cubic easing formula: 1 - Math.pow(1 - progress, 3)
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                currentRotation = startRotation + totalRotationDelta * easeOut;
+
+                // Check tick sound trigger
+                const currentNormalized = ((Math.PI * 2) - (currentRotation % (Math.PI * 2))) % (Math.PI * 2);
+                const currentSlice = Math.floor(currentNormalized / sliceAngle) % numSlices;
+                
+                if (currentSlice !== lastTickSlice) {
+                    playTickSound();
+                    lastTickSlice = currentSlice;
+                }
+
+                drawWheel();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateSpin);
+                } else {
+                    isSpinning = false;
+                    currentRotation = finalRotation;
+                    drawWheel();
+                    
+                    // Announce Winner
+                    const winnerName = entries[targetIndex];
+                    showWinnerModal(winnerName);
+                }
+            }
+
+            requestAnimationFrame(animateSpin);
+        }
+
+        function showWinnerModal(name) {
+            lastWinner = name;
+            document.getElementById('winnerNameText').innerText = name;
+            
+            // Add to Results
+            results.unshift({ name, time: new Date().toLocaleTimeString() });
+            updateResultsUI();
+
+            const modal = document.getElementById('winnerModal');
+            const content = document.getElementById('winnerModalContent');
+            
+            modal.classList.remove('hidden');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+
+            // Trigger Confetti Blast
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('winnerModal');
+            modal.classList.add('hidden');
+        }
+
+        // Remove single instance of winner from entries
+        function removeCurrentWinner() {
+            if (!lastWinner) return;
+            const index = entries.indexOf(lastWinner);
+            if (index !== -1) {
+                entries.splice(index, 1);
+                document.getElementById('entriesTextarea').value = entries.join('\n');
+                updateWheelFromTextarea();
+            }
+            closeModal();
+        }
+
+        // Remove all matching instances of winner from entries
+        function removeAllInstancesWinner() {
+            if (!lastWinner) return;
+            entries = entries.filter(e => e !== lastWinner);
+            document.getElementById('entriesTextarea').value = entries.join('\n');
+            updateWheelFromTextarea();
+            closeModal();
+        }
+
+        function switchTab(tab) {
+            const tabEntries = document.getElementById('tabEntries');
+            const tabResults = document.getElementById('tabResults');
+            const btnEntries = document.getElementById('tabEntriesBtn');
+            const btnResults = document.getElementById('tabResultsBtn');
+
+            if (tab === 'entries') {
+                tabEntries.classList.remove('hidden');
+                tabEntries.classList.add('flex');
+                tabResults.classList.add('hidden');
+                tabResults.classList.remove('flex');
+
+                btnEntries.className = "flex-1 py-3 font-semibold text-sm border-b-2 border-blue-500 text-blue-400 flex items-center justify-center space-x-2";
+                btnResults.className = "flex-1 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 flex items-center justify-center space-x-2";
+            } else {
+                tabResults.classList.remove('hidden');
+                tabResults.classList.add('flex');
+                tabEntries.classList.add('hidden');
+                tabEntries.classList.remove('flex');
+
+                btnResults.className = "flex-1 py-3 font-semibold text-sm border-b-2 border-blue-500 text-blue-400 flex items-center justify-center space-x-2";
+                btnEntries.className = "flex-1 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 flex items-center justify-center space-x-2";
+            }
+        }
+
+        function shuffleEntries() {
+            for (let i = entries.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [entries[i], entries[j]] = [entries[j], entries[i]];
+            }
+            document.getElementById('entriesTextarea').value = entries.join('\n');
+            updateWheelFromTextarea();
+        }
+
+        function sortEntries() {
+            entries.sort((a, b) => a.localeCompare(b));
+            document.getElementById('entriesTextarea').value = entries.join('\n');
+            updateWheelFromTextarea();
+        }
+
+        function updateResultsUI() {
+            const resultsList = document.getElementById('resultsList');
+            document.getElementById('resultsCountBadge').innerText = results.length;
+
+            if (results.length === 0) {
+                resultsList.innerHTML = `<li class="text-gray-500 italic text-center py-6">Belum ada pemenang</li>`;
+                return;
+            }
+
+            resultsList.innerHTML = results.map(r => `
+                <li class="bg-[#1c2638] px-3 py-2 rounded flex justify-between items-center border border-gray-800">
+                    <span class="font-bold text-gray-100">${r.name}</span>
+                    <span class="text-xs text-gray-500">${r.time}</span>
+                </li>
+            `).join('');
+        }
+
+        function clearResults() {
+            results = [];
+            updateResultsUI();
+        }
+
+        function resetWheel() {
+            if (confirm('Aplikasi akan direset ke awal. Lanjutkan?')) {
+                document.getElementById('entriesTextarea').value = "MIRMA\nSISKA\nCHRISTINA\nMIRMA\nNUNUK\nLINA\nHESTIN\nGURUH\nFAKUR\nSISKA\nANA\nGURUH\nSILVI\nHESTIN\nADI\nNURIFA\nSILVI\nNUNUK\nNURIFA";
+                results = [];
+                updateResultsUI();
+                updateWheelFromTextarea();
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function toggleSecretModal(show) {
+            const modal = document.getElementById('secretModal');
+            if (show === undefined) {
+                modal.classList.toggle('hidden');
+            } else if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+
+            if (!modal.classList.contains('hidden')) {
+                updateSecretUI();
+            }
+        }
+
+        function updateSecretUI() {
+            const container = document.getElementById('secretBlacklistContainer');
+            const forcedSelect = document.getElementById('secretForcedWinnerSelect');
+            
+            if (!container) return;
+
+            // Unique names for blacklist configuration
+            const uniqueNames = Array.from(new Set(entries));
+
+            if (uniqueNames.length === 0) {
+                container.innerHTML = `<span class="text-gray-500 italic">Tidak ada nama dalam daftar entries.</span>`;
+                forcedSelect.innerHTML = `<option value="">-- Acak --</option>`;
+                return;
+            }
+
+            // Render Blacklist Checkboxes
+            container.innerHTML = uniqueNames.map(name => `
+                <label class="flex items-center justify-between p-2 rounded bg-[#151c2c] hover:bg-[#1f293d] cursor-pointer">
+                    <span class="font-medium ${blacklistedNames.has(name) ? 'text-amber-400 line-through' : 'text-gray-200'}">${name}</span>
+                    <input type="checkbox" 
+                        ${blacklistedNames.has(name) ? 'checked' : ''} 
+                        onchange="toggleBlacklistName('${name}', this.checked)"
+                        class="w-4 h-4 rounded border-gray-700 text-amber-500 focus:ring-0">
+                </label>
+            `).join('');
+
+            // Render Forced Winner Dropdown
+            const currentForced = forcedSelect.value;
+            forcedSelect.innerHTML = `<option value="">-- Acak dari nama yang TIDAK dikunci --</option>` +
+                uniqueNames.map(name => `<option value="${name}" ${currentForced === name ? 'selected' : ''}>${name}</option>`).join('');
+        }
+
+        function toggleBlacklistName(name, isChecked) {
+            if (isChecked) {
+                blacklistedNames.add(name);
+            } else {
+                blacklistedNames.delete(name);
+            }
+            updateSecretUI();
+        }
+
+        function selectAllSecret(lockAll) {
+            const uniqueNames = Array.from(new Set(entries));
+            if (lockAll) {
+                uniqueNames.forEach(n => blacklistedNames.add(n));
+            } else {
+                blacklistedNames.clear();
+            }
+            updateSecretUI();
+        }
+
+        function customizeWheel() {
+            alert('Menu kustomisasi warna & efek tersedia.');
+        }
+
+        // Initialize App on Window Load
+        window.onload = init;
+    </script>
+</body>
+</html>
